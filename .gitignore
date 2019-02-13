@@ -1,0 +1,14 @@
+/node_modules
+/fabInvoice/node_modules
+/fabInvoice/hfc-key-store
+# Emacs backup files
+*~
+*#
+.#*
+# Vim file artifacts
+.*.sw*
+# installed platform-specific binaries
+/bin
+/config
+.DS_Store
+.project
