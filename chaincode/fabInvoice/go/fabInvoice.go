@@ -52,9 +52,9 @@
 	 InvoiceAmount   float64 `json:"invoiceAmount"`
 	 ItemDescription string `json:"itemDescription"`
 	 GR              string `json:"gr"`
-	 IsPaid          string `json:"isPaid"`
+	 IsPaid          bool `json:"isPaid"`
 	 PaidAmount      float64 `json:"paidAmount"`
-	 Repaid          string `json:"repaid"`
+	 Repaid          bool `json:"repaid"`
 	 RepaymentAmount float64 `json:"repaymentAmount"`
  }
 
@@ -169,7 +169,17 @@
 
  func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
 	 invoice := []Invoice{
-		 Invoice{InvoiceNumber: "0001", BilledTo: "Samsung", InvoiceDate: "10-30-2014", InvoiceAmount: 1000, ItemDescription: "Screen", GR: "N", IsPaid: "N", PaidAmount: 0, Repaid: "N", RepaymentAmount: 0},
+		 Invoice{
+       InvoiceNumber: "0001",
+       BilledTo: "Samsung",
+       InvoiceDate: "10-30-2014",
+       InvoiceAmount: 10000.00,
+       ItemDescription: "Screen",
+       GR: "false",
+       IsPaid: false,
+       PaidAmount: 0.00,
+       Repaid: false,
+       RepaymentAmount: 0},
 	 }
 
 	 i := 0
@@ -186,15 +196,24 @@
 
  func (s *SmartContract) newInvoice(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	 if len(args) != 11 {
-		 return shim.Error("Incorrect number of arguments. Expecting 11")
+	 if len(args) != 6 {
+		 return shim.Error("Incorrect number of arguments. Expecting 6")
 	 }
 
    iAmount, _ := strconv.ParseFloat(args[4], 64)
-   pAmount, _ := strconv.ParseFloat(args[8], 64)
-   rpAmount, _ := strconv.ParseFloat(args[10], 64)
+  // pAmount, _ := strconv.ParseFloat(args[6], 64)
+  // rpAmount, _ := strconv.ParseFloat(args[7], 64)
 
-	 var invoice = Invoice{InvoiceNumber: args[1], BilledTo: args[2], InvoiceDate: args[3], InvoiceAmount: iAmount, ItemDescription: args[5], GR: args[6], IsPaid: args[7], PaidAmount: pAmount, Repaid: args[9], RepaymentAmount: rpAmount}
+	 var invoice = Invoice{InvoiceNumber: args[1],
+     BilledTo: args[2],
+     InvoiceDate: args[3],
+     InvoiceAmount: iAmount,
+     ItemDescription: args[5],
+     GR: "false",
+     IsPaid: false,
+     PaidAmount: 0,
+      Repaid: false,
+      RepaymentAmount: 0}
 
 	 invoiceAsBytes, _ := json.Marshal(invoice)
 	 APIstub.PutState(args[0], invoiceAsBytes)
@@ -282,8 +301,8 @@
 
  func (s *SmartContract) isPaidToSupplier(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	 if len(args) != 3 {
-		 return shim.Error("Incorrect number of arguments. Expecting 3")
+	 if len(args) != 2 {
+		 return shim.Error("Incorrect number of arguments. Expecting 2")
 	 }
 
 	 invoiceAsBytes, _ := APIstub.GetState(args[0])
@@ -293,7 +312,7 @@
    json.Unmarshal(invoiceAsBytes, &invoice)
    if pAmount < invoice.InvoiceAmount {
      invoice.PaidAmount = pAmount
-     invoice.IsPaid = args[2]
+     invoice.IsPaid = true
    } else {
      return shim.Error("Paid Amount should be less than Invoice Amount")
    }
@@ -305,8 +324,8 @@
 
  func (s *SmartContract) isPaidToBank(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	 if len(args) != 3 {
-		 return shim.Error("Incorrect number of arguments. Expecting 3")
+	 if len(args) != 2 {
+		 return shim.Error("Incorrect number of arguments. Expecting 2")
 	 }
 
    invoiceAsBytes, _ := APIstub.GetState(args[0])
@@ -314,9 +333,9 @@
 
    rpAmount, _ := strconv.ParseFloat(args[1], 64)
    json.Unmarshal(invoiceAsBytes, &invoice)
-   if rpAmount > invoice.PaidAmount {
+   if rpAmount > invoice.InvoiceAmount {
      invoice.RepaymentAmount = rpAmount
-     invoice.Repaid = args[2]
+     invoice.Repaid = true
    } else {
      return shim.Error("Repayment Amount should be greater than Paid Amount")
    }

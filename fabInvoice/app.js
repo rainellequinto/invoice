@@ -104,11 +104,6 @@ if (req.method == "POST")
     newInvoice.push(invoiceDate);
     newInvoice.push(invoiceAmount);
     newInvoice.push(itemDescription);
-    newInvoice.push(gr);
-    newInvoice.push(isPaid);
-    newInvoice.push(paidAmount);
-    newInvoice.push(repaid);
-    newInvoice.push(repaymentAmount);
   }
 
 }
@@ -135,8 +130,6 @@ else if(req.method == "PUT")
       else {
         request.fcn= 'isPaidToSupplier',
         newInvoice.push(paidAmount);
-        isPaid = 'Y';
-        newInvoice.push(isPaid);
       }
     }
     else if(repaymentAmount)
@@ -148,8 +141,6 @@ else if(req.method == "PUT")
       } else {
         request.fcn= 'isPaidToBank',
         newInvoice.push(repaymentAmount);
-        repaid = 'Y';
-        newInvoice.push(repaid);
       }
     }
 }
@@ -231,6 +222,8 @@ promises.push(txPromise);
 
 return Promise.all(promises);
 } else {
+  //Incorrect input
+  res.json({"status": "404"}); //or res.json("Incorrect User Input");
 console.error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
 throw new Error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
 }
@@ -345,6 +338,8 @@ console.log("Response is ", query_responses[0].toString());
 console.log("No payloads were returned from query");
 }
 }).catch((err) => {
+//  res.json({"status":"603"});
+  res.json("Username input is required.");
 console.error('Failed to query successfully :: ' + err);
 });
 
